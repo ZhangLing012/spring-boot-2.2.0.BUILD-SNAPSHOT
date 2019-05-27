@@ -90,6 +90,9 @@ public class AutoConfigurationImportSelector
 
 	private ResourceLoader resourceLoader;
 
+	/**
+	 * 调用了其他的几个方法来加载元数据等信息，最后返回一个包含许多自动配置类信息的字符串数组
+	 */
 	@Override
 	public String[] selectImports(AnnotationMetadata annotationMetadata) {
 		if (!isEnabled(annotationMetadata)) {
@@ -116,6 +119,7 @@ public class AutoConfigurationImportSelector
 			return EMPTY_ENTRY;
 		}
 		AnnotationAttributes attributes = getAttributes(annotationMetadata);
+		// 返回了自动配置类的信息列表
 		List<String> configurations = getCandidateConfigurations(annotationMetadata,
 				attributes);
 		configurations = removeDuplicates(configurations);
@@ -178,6 +182,7 @@ public class AutoConfigurationImportSelector
 	 */
 	protected List<String> getCandidateConfigurations(AnnotationMetadata metadata,
 			AnnotationAttributes attributes) {
+		// 参考@ConditionalOnClass 自动配置实现
 		List<String> configurations = SpringFactoriesLoader.loadFactoryNames(
 				getSpringFactoriesLoaderFactoryClass(), getBeanClassLoader());
 		Assert.notEmpty(configurations,

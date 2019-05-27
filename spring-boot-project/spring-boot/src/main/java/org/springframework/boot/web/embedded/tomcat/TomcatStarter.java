@@ -33,6 +33,7 @@ import org.springframework.boot.web.servlet.ServletContextInitializer;
  *
  * @author Phillip Webb
  * @author Andy Wilkinson
+ * springboot 考虑到了如下的问题，我们在使用 springboot 时，开发阶段一般都是使用内嵌 tomcat 容器，但部署时却存在两种选择：一种是打成 jar 包，使用 java -jar 的方式运行；另一种是打成 war 包，交给外置容器去运行。前者就会导致容器搜索算法出现问题，因为这是 jar 包的运行策略，不会按照 servlet3.0 的策略去加载 ServletContainerInitializer！
  */
 class TomcatStarter implements ServletContainerInitializer {
 

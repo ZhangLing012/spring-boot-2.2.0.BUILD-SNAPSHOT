@@ -88,6 +88,8 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
  * @see AnnotationConfigServletWebServerApplicationContext
  * @see XmlServletWebServerApplicationContext
  * @see ServletWebServerFactory
+ *
+ * 1.5.20 EmbeddedWebApplicationContext
  */
 public class ServletWebServerApplicationContext extends GenericWebApplicationContext
 		implements ConfigurableWebServerApplicationContext {

@@ -82,7 +82,7 @@ public class DispatcherServletAutoConfiguration {
 	@Configuration
 	@Conditional(DefaultDispatcherServletCondition.class)
 	@ConditionalOnClass(ServletRegistration.class)
-	@EnableConfigurationProperties({ HttpProperties.class, WebMvcProperties.class })
+	@EnableConfigurationProperties({HttpProperties.class, WebMvcProperties.class})
 	protected static class DispatcherServletConfiguration {
 
 		private final HttpProperties httpProperties;
@@ -90,7 +90,7 @@ public class DispatcherServletAutoConfiguration {
 		private final WebMvcProperties webMvcProperties;
 
 		public DispatcherServletConfiguration(HttpProperties httpProperties,
-				WebMvcProperties webMvcProperties) {
+											  WebMvcProperties webMvcProperties) {
 			this.httpProperties = httpProperties;
 			this.webMvcProperties = webMvcProperties;
 		}
@@ -141,6 +141,8 @@ public class DispatcherServletAutoConfiguration {
 		@ConditionalOnBean(value = DispatcherServlet.class, name = DEFAULT_DISPATCHER_SERVLET_BEAN_NAME)
 		public DispatcherServletRegistrationBean dispatcherServletRegistration(
 				DispatcherServlet dispatcherServlet) {
+			//默认拦截： /  所有请求；包静态资源，但是不拦截jsp请求；   /*会拦截jsp
+			//可以通过server.servletPath来修改SpringMVC前端控制器默认拦截的请求路径
 			DispatcherServletRegistrationBean registration = new DispatcherServletRegistrationBean(
 					dispatcherServlet, this.webMvcProperties.getServlet().getPath());
 			registration.setName(DEFAULT_DISPATCHER_SERVLET_BEAN_NAME);
@@ -159,7 +161,7 @@ public class DispatcherServletAutoConfiguration {
 
 		@Override
 		public ConditionOutcome getMatchOutcome(ConditionContext context,
-				AnnotatedTypeMetadata metadata) {
+												AnnotatedTypeMetadata metadata) {
 			ConditionMessage.Builder message = ConditionMessage
 					.forCondition("Default DispatcherServlet");
 			ConfigurableListableBeanFactory beanFactory = context.getBeanFactory();
@@ -192,7 +194,7 @@ public class DispatcherServletAutoConfiguration {
 
 		@Override
 		public ConditionOutcome getMatchOutcome(ConditionContext context,
-				AnnotatedTypeMetadata metadata) {
+												AnnotatedTypeMetadata metadata) {
 			ConfigurableListableBeanFactory beanFactory = context.getBeanFactory();
 			ConditionOutcome outcome = checkDefaultDispatcherName(beanFactory);
 			if (!outcome.isMatch()) {

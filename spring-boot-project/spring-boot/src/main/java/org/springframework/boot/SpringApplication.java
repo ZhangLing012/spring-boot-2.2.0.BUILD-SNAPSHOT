@@ -270,7 +270,7 @@ public class SpringApplication {
 		// 3、初始化主要加载资源类集合并去重
 		this.primarySources = new LinkedHashSet<>(Arrays.asList(primarySources));
 		// 4、推断当前 WEB 应用类型
-		// deduceWebApplicationType
+		// deduceWebApplicationType   根据类路径下是否有对应项目类型的类推断出不同的应用类型
 		this.webApplicationType = WebApplicationType.deduceFromClasspath();
 		// 5、设置应用上线文初始化器
 		// setInitializers初始化一个 ApplicationContextInitializer 应用上下文初始化器实例的集合。
@@ -320,6 +320,7 @@ public class SpringApplication {
 		configureHeadlessProperty();
 		// 4、创建所有 Spring 运行监听器并发布应用启动事件
 		SpringApplicationRunListeners listeners = getRunListeners(args);
+		//发布ApplicationStartedEvent
 		listeners.starting();
 		try {
 			// 5、初始化默认应用参数类
@@ -638,12 +639,15 @@ public class SpringApplication {
 			try {
 				switch (this.webApplicationType) {
 					case SERVLET:
+						// AnnotationConfigServletWebServerApplicationContext
 						contextClass = Class.forName(DEFAULT_SERVLET_WEB_CONTEXT_CLASS);
 						break;
 					case REACTIVE:
+						// AnnotationConfigReactiveWebServerApplicationContext
 						contextClass = Class.forName(DEFAULT_REACTIVE_WEB_CONTEXT_CLASS);
 						break;
 					default:
+						// AnnotationConfigApplicationContext
 						contextClass = Class.forName(DEFAULT_CONTEXT_CLASS);
 				}
 			} catch (ClassNotFoundException ex) {

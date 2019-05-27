@@ -144,6 +144,7 @@ public abstract class AutoConfigurationPackages {
 		private final String packageName;
 
 		PackageImport(AnnotationMetadata metadata) {
+			// 默认会装配启动类路径的所有包下可装配的Bean
 			this.packageName = ClassUtils.getPackageName(metadata.getClassName());
 		}
 

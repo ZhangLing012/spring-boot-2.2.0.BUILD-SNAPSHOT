@@ -45,7 +45,7 @@ class OnClassCondition extends FilteringSpringBootCondition {
 
 	@Override
 	protected final ConditionOutcome[] getOutcomes(String[] autoConfigurationClasses,
-			AutoConfigurationMetadata autoConfigurationMetadata) {
+												   AutoConfigurationMetadata autoConfigurationMetadata) {
 		// Split the work and perform half in a background thread. Using a single
 		// additional thread seems to offer the best performance. More threads make
 		// things worse
@@ -64,27 +64,29 @@ class OnClassCondition extends FilteringSpringBootCondition {
 	}
 
 	private OutcomesResolver createOutcomesResolver(String[] autoConfigurationClasses,
-			int start, int end, AutoConfigurationMetadata autoConfigurationMetadata) {
+													int start, int end, AutoConfigurationMetadata autoConfigurationMetadata) {
 		OutcomesResolver outcomesResolver = new StandardOutcomesResolver(
 				autoConfigurationClasses, start, end, autoConfigurationMetadata,
 				getBeanClassLoader());
 		try {
 			return new ThreadedOutcomesResolver(outcomesResolver);
-		}
-		catch (AccessControlException ex) {
+		} catch (AccessControlException ex) {
 			return outcomesResolver;
 		}
 	}
 
 	@Override
 	public ConditionOutcome getMatchOutcome(ConditionContext context,
-			AnnotatedTypeMetadata metadata) {
+											AnnotatedTypeMetadata metadata) {
 		ClassLoader classLoader = context.getClassLoader();
 		ConditionMessage matchMessage = ConditionMessage.empty();
+		// 找出所有ConditionalOnClass注解的属性
 		List<String> onClasses = getCandidates(metadata, ConditionalOnClass.class);
 		if (onClasses != null) {
+			// 找出不在类路径中的类
 			List<String> missing = filter(onClasses, ClassNameFilter.MISSING,
 					classLoader);
+			// 如果存在不在类路径中的类，匹配失败
 			if (!missing.isEmpty()) {
 				return ConditionOutcome
 						.noMatch(ConditionMessage.forCondition(ConditionalOnClass.class)
@@ -95,6 +97,8 @@ class OnClassCondition extends FilteringSpringBootCondition {
 					.found("required class", "required classes").items(Style.QUOTE,
 							filter(onClasses, ClassNameFilter.PRESENT, classLoader));
 		}
+		// 接着找出所有ConditionalOnMissingClass注解的属性
+		// 它与ConditionalOnClass注解的含义正好相反，所以以下逻辑也与上面相反
 		List<String> onMissingClasses = getCandidates(metadata,
 				ConditionalOnMissingClass.class);
 		if (onMissingClasses != null) {
@@ -114,8 +118,9 @@ class OnClassCondition extends FilteringSpringBootCondition {
 		return ConditionOutcome.match(matchMessage);
 	}
 
+	// 获得所有annotationType注解的属性
 	private List<String> getCandidates(AnnotatedTypeMetadata metadata,
-			Class<?> annotationType) {
+									   Class<?> annotationType) {
 		MultiValueMap<String, Object> attributes = metadata
 				.getAllAnnotationAttributes(annotationType.getName(), true);
 		if (attributes == null) {
@@ -157,8 +162,7 @@ class OnClassCondition extends FilteringSpringBootCondition {
 		public ConditionOutcome[] resolveOutcomes() {
 			try {
 				this.thread.join();
-			}
-			catch (InterruptedException ex) {
+			} catch (InterruptedException ex) {
 				Thread.currentThread().interrupt();
 			}
 			return this.outcomes;
@@ -179,8 +183,8 @@ class OnClassCondition extends FilteringSpringBootCondition {
 		private final ClassLoader beanClassLoader;
 
 		private StandardOutcomesResolver(String[] autoConfigurationClasses, int start,
-				int end, AutoConfigurationMetadata autoConfigurationMetadata,
-				ClassLoader beanClassLoader) {
+										 int end, AutoConfigurationMetadata autoConfigurationMetadata,
+										 ClassLoader beanClassLoader) {
 			this.autoConfigurationClasses = autoConfigurationClasses;
 			this.start = start;
 			this.end = end;
@@ -195,7 +199,7 @@ class OnClassCondition extends FilteringSpringBootCondition {
 		}
 
 		private ConditionOutcome[] getOutcomes(String[] autoConfigurationClasses,
-				int start, int end, AutoConfigurationMetadata autoConfigurationMetadata) {
+											   int start, int end, AutoConfigurationMetadata autoConfigurationMetadata) {
 			ConditionOutcome[] outcomes = new ConditionOutcome[end - start];
 			for (int i = start; i < end; i++) {
 				String autoConfigurationClass = autoConfigurationClasses[i];
@@ -223,8 +227,7 @@ class OnClassCondition extends FilteringSpringBootCondition {
 						return outcome;
 					}
 				}
-			}
-			catch (Exception ex) {
+			} catch (Exception ex) {
 				// We'll get another chance later
 			}
 			return null;
