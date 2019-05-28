@@ -57,6 +57,7 @@ public class WebServerFactoryCustomizerBeanPostProcessor
 	@Override
 	public Object postProcessBeforeInitialization(Object bean, String beanName)
 			throws BeansException {
+		//
 		if (bean instanceof WebServerFactory) {
 			postProcessBeforeInitialization((WebServerFactory) bean);
 		}
@@ -70,6 +71,7 @@ public class WebServerFactoryCustomizerBeanPostProcessor
 	}
 
 	@SuppressWarnings("unchecked")
+	//获取所有的定制器，调用每一个定制器的customize方法来给Servlet容器进行属性赋值；
 	private void postProcessBeforeInitialization(WebServerFactory webServerFactory) {
 		LambdaSafe
 				.callbacks(WebServerFactoryCustomizer.class, getCustomizers(),
@@ -81,6 +83,7 @@ public class WebServerFactoryCustomizerBeanPostProcessor
 	private Collection<WebServerFactoryCustomizer<?>> getCustomizers() {
 		if (this.customizers == null) {
 			// Look up does not include the parent context
+			//
 			this.customizers = new ArrayList<>(getWebServerFactoryCustomizerBeans());
 			this.customizers.sort(AnnotationAwareOrderComparator.INSTANCE);
 			this.customizers = Collections.unmodifiableList(this.customizers);
