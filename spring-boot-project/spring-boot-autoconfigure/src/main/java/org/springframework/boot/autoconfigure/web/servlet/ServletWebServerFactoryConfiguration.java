@@ -53,6 +53,10 @@ import org.springframework.context.annotation.Configuration;
  * @author Brian Clozel
  * @author Stephane Nicoll
  * @author Raheela Asalm
+ *
+ * 通过@ConditionalOnClass和@ConditionalOnMissingBean注解，在classpath中寻找tomcat或jetty或undertow的jar包。
+ *
+ * spring-boot-starter-web默认加载了spring-boot-starter-tomcat，进而加载了tomcat-embed-core，所以这里得到了tomcatServletWebServerFactory，并通过getTomcatWebServer(Tomcat tomcat)实例化TomcatWebServer，最终TomcatWebServer调用initialize()方法完成tomcat.start()调用。
  */
 @Configuration
 class ServletWebServerFactoryConfiguration {
@@ -66,6 +70,7 @@ class ServletWebServerFactoryConfiguration {
 		public TomcatServletWebServerFactory tomcatServletWebServerFactory(
 				ObjectProvider<TomcatConnectorCustomizer> connectorCustomizers,
 				ObjectProvider<TomcatContextCustomizer> contextCustomizers) {
+			//
 			TomcatServletWebServerFactory factory = new TomcatServletWebServerFactory();
 			factory.getTomcatConnectorCustomizers().addAll(
 					connectorCustomizers.orderedStream().collect(Collectors.toList()));

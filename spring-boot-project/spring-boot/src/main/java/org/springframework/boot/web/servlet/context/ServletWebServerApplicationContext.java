@@ -153,6 +153,7 @@ public class ServletWebServerApplicationContext extends GenericWebApplicationCon
 	protected void onRefresh() {
 		super.onRefresh();
 		try {
+			// 创建
 			createWebServer();
 		}
 		catch (Throwable ex) {
@@ -179,7 +180,9 @@ public class ServletWebServerApplicationContext extends GenericWebApplicationCon
 		WebServer webServer = this.webServer;
 		ServletContext servletContext = getServletContext();
 		if (webServer == null && servletContext == null) {
+			 // factory得到的具体实现是TomcatServletWebServerFactory
 			ServletWebServerFactory factory = getWebServerFactory();
+			// getSelfInitializer
 			this.webServer = factory.getWebServer(getSelfInitializer());
 		}
 		else if (servletContext != null) {
@@ -202,6 +205,7 @@ public class ServletWebServerApplicationContext extends GenericWebApplicationCon
 	 */
 	protected ServletWebServerFactory getWebServerFactory() {
 		// Use bean names so that we don't consider the hierarchy
+		 // beanNames数组只有一个元素，且为tomcatServletWebServerFactory
 		String[] beanNames = getBeanFactory()
 				.getBeanNamesForType(ServletWebServerFactory.class);
 		if (beanNames.length == 0) {
@@ -233,6 +237,7 @@ public class ServletWebServerApplicationContext extends GenericWebApplicationCon
 		registerApplicationScope(servletContext);
 		WebApplicationContextUtils.registerEnvironmentBeans(getBeanFactory(),
 				servletContext);
+		// TomcatStarter 的 debug 信息中，第一个 ServletContextInitializer 就是出现在 EmbeddedWebApplicationContext (当前版本为当期类)中的一个匿名类，没错了，就是这里的 getSelfInitializer() 方法创建的！解释下这里的 getSelfInitializer() 和 selfInitialize(ServletContext servletContext) 为什么要这么设计：这是典型的回调式方式，当匿名 ServletContextInitializer 类被 TomcatStarter 的 onStartup 方法调用，设计上是触发了 selfInitialize(ServletContext servletContext) 的调用。所以这下就清晰了，为什么 TomcatStarter 中没有出现 RegisterBean ，其实是隐式触发了 EmbeddedWebApplicationContext 中的 selfInitialize 方法。selfInitialize 方法中的 getServletContextInitializerBeans() 成了关键。
 		for (ServletContextInitializer beans : getServletContextInitializerBeans()) {
 			beans.onStartup(servletContext);
 		}

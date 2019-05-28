@@ -85,6 +85,7 @@ public class ServletContextInitializerBeans
 		this.initializerTypes = (initializerTypes.length != 0)
 				? Arrays.asList(initializerTypes)
 				: Collections.singletonList(ServletContextInitializer.class);
+		//
 		addServletContextInitializerBeans(beanFactory);
 		addAdaptableBeans(beanFactory);
 		List<ServletContextInitializer> sortedInitializers = this.initializers.values()
@@ -97,6 +98,7 @@ public class ServletContextInitializerBeans
 	}
 
 	private void addServletContextInitializerBeans(ListableBeanFactory beanFactory) {
+		// getOrderedBeansOfType 方法便是去容器中寻找注册过得 ServletContextInitializer ，这时候就可以把之前那些 RegisterBean 全部加载出来了，并且 RegisterBean 还实现了 Ordered 接口，在这儿用于排序。不再往下迭代了。
 		for (Class<? extends ServletContextInitializer> initializerType : this.initializerTypes) {
 			for (Entry<String, ? extends ServletContextInitializer> initializerBean : getOrderedBeansOfType(
 					beanFactory, initializerType)) {

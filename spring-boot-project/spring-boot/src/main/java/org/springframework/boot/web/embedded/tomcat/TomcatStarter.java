@@ -51,6 +51,8 @@ class TomcatStarter implements ServletContainerInitializer {
 	public void onStartup(Set<Class<?>> classes, ServletContext servletContext)
 			throws ServletException {
 		try {
+			// 调用一系列 ServletContextInitializer 的 onStartup 方法
+			// 1.5 版本中  ServletContextInitializer 3个
 			for (ServletContextInitializer initializer : this.initializers) {
 				initializer.onStartup(servletContext);
 			}
