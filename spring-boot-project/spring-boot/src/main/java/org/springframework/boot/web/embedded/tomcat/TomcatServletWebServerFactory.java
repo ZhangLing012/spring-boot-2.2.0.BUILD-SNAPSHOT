@@ -174,7 +174,7 @@ public class TomcatServletWebServerFactory extends AbstractServletWebServerFacto
 		}
 		//
 		prepareContext(tomcat.getHost(), initializers);
-		 //将配置好的Tomcat传入进去，返回一个EmbeddedServletContainer；并且启动Tomcat服务器
+		 //将配置好的Tomcat传入进去，返回一个EmbeddedServletContainer；并且 启动 Tomcat服务器 会调用到onstart方法，TomcatStartter onStartup 被调用
 		return getTomcatWebServer(tomcat);
 	}
 
