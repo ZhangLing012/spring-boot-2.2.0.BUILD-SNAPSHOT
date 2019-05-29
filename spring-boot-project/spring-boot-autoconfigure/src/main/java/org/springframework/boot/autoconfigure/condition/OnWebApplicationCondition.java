@@ -95,15 +95,20 @@ class OnWebApplicationCondition extends FilteringSpringBootCondition {
 	@Override
 	public ConditionOutcome getMatchOutcome(ConditionContext context,
 			AnnotatedTypeMetadata metadata) {
+		// 1. 检查是否被@ConditionalOnWebApplication 注解
 		boolean required = metadata
 				.isAnnotated(ConditionalOnWebApplication.class.getName());
+		// 2. 判断是否是WebApplication
 		ConditionOutcome outcome = isWebApplication(context, metadata, required);
 		if (required && !outcome.isMatch()) {
+			// 3. 如果有@ConditionalOnWebApplication 注解,但是不是WebApplication环境,则返回不匹配
 			return ConditionOutcome.noMatch(outcome.getConditionMessage());
 		}
 		if (!required && outcome.isMatch()) {
+			// 4. 如果没有被@ConditionalOnWebApplication 注解,但是是WebApplication环境,则返回不匹配
 			return ConditionOutcome.noMatch(outcome.getConditionMessage());
 		}
+		// 5. 如果被@ConditionalOnWebApplication 注解,并且是WebApplication环境,则返回匹配
 		return ConditionOutcome.match(outcome.getConditionMessage());
 	}
 

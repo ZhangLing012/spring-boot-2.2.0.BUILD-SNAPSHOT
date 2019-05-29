@@ -163,10 +163,12 @@ public class ServletWebServerApplicationContext extends GenericWebApplicationCon
 
 	@Override
 	protected void finishRefresh() {
+		//	调用AbstractApplicationContext#finishRefresh
 		super.finishRefresh();
 		// 启动Servlet容器
 		WebServer webServer = startWebServer();
 		if (webServer != null) {
+			// 发布EmbeddedServletContainerInitializedEvent事件
 			publishEvent(new ServletWebServerInitializedEvent(webServer, this));
 		}
 	}
@@ -200,6 +202,7 @@ public class ServletWebServerApplicationContext extends GenericWebApplicationCon
 						ex);
 			}
 		}
+//		 初始化PropertySources 最终调用WebApplicationContextUtils#initServletPropertySources.
 		initPropertySources();
 	}
 
@@ -214,17 +217,21 @@ public class ServletWebServerApplicationContext extends GenericWebApplicationCon
 		 // beanNames数组只有一个元素，且为tomcatServletWebServerFactory
 		String[] beanNames = getBeanFactory()
 				.getBeanNamesForType(ServletWebServerFactory.class);
+		//		如果没有的话,或者如果有大于1个的话,抛出异常
 		if (beanNames.length == 0) {
 			throw new ApplicationContextException(
 					"Unable to start ServletWebServerApplicationContext due to missing "
 							+ "ServletWebServerFactory bean.");
 		}
+
 		if (beanNames.length > 1) {
 			throw new ApplicationContextException(
 					"Unable to start ServletWebServerApplicationContext due to multiple "
 							+ "ServletWebServerFactory beans : "
 							+ StringUtils.arrayToCommaDelimitedString(beanNames));
 		}
+		//获得实例
+		// 最终调用了AbstractBeanFactory#getBean,该bean触发了bean的实例化,在实例化的过程中,会触发一系列的扩展点的调用
 		return getBeanFactory().getBean(beanNames[0], ServletWebServerFactory.class);
 	}
 

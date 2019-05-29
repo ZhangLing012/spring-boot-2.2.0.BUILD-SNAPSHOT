@@ -88,10 +88,10 @@ import org.springframework.util.StringUtils;
  * @author Andy Wilkinson
  * @author Eddú Meléndez
  * @author Christoffer Sawicki
- * @since 2.0.0
  * @see #setPort(int)
  * @see #setContextLifecycleListeners(Collection)
  * @see TomcatWebServer
+ * @since 2.0.0
  */
 public class TomcatServletWebServerFactory extends AbstractServletWebServerFactory
 		implements ConfigurableTomcatWebServerFactory, ResourceLoaderAware {
@@ -139,6 +139,7 @@ public class TomcatServletWebServerFactory extends AbstractServletWebServerFacto
 	/**
 	 * Create a new {@link TomcatServletWebServerFactory} that listens for requests using
 	 * the specified port.
+	 *
 	 * @param port the port to listen on
 	 */
 	public TomcatServletWebServerFactory(int port) {
@@ -148,8 +149,9 @@ public class TomcatServletWebServerFactory extends AbstractServletWebServerFacto
 	/**
 	 * Create a new {@link TomcatServletWebServerFactory} with the specified context path
 	 * and port.
+	 *
 	 * @param contextPath the root context path
-	 * @param port the port to listen on
+	 * @param port        the port to listen on
 	 */
 	public TomcatServletWebServerFactory(String contextPath, int port) {
 		super(contextPath, port);
@@ -157,25 +159,32 @@ public class TomcatServletWebServerFactory extends AbstractServletWebServerFacto
 
 	@Override
 	public WebServer getWebServer(ServletContextInitializer... initializers) {
-		//创建一个Tomcat
+		// 1. 实例化Tomcat
 		Tomcat tomcat = new Tomcat();
-		//配置Tomcat的基本环节
+		// 2. 设置临时目录
+		//配置Tomcat的基本环节  设置临时目录
 		File baseDir = (this.baseDirectory != null) ? this.baseDirectory
 				: createTempDir("tomcat");
 		tomcat.setBaseDir(baseDir.getAbsolutePath());
+		// 3. 添加Connector
 		Connector connector = new Connector(this.protocol);
 		tomcat.getService().addConnector(connector);
+		// 4. 个性化设置
 		// 设置端口等其他connector配置信息
 		customizeConnector(connector);
 		tomcat.setConnector(connector);
 		tomcat.getHost().setAutoDeploy(false);
+		// 5. 配置引擎
 		configureEngine(tomcat.getEngine());
+		// 6. 添加Connector,一般情况下是没有的
 		for (Connector additionalConnector : this.additionalTomcatConnectors) {
 			tomcat.getService().addConnector(additionalConnector);
 		}
-		//
+		// 7. 准备上下文
 		prepareContext(tomcat.getHost(), initializers);
-		 //将配置好的Tomcat传入进去，返回一个EmbeddedServletContainer；并且 启动 Tomcat服务器 会调用到onstart方法，TomcatStartter onStartup 被调用
+		//8. 实例化TomcatEmbeddedServletContainer
+		// class TomcatEmbeddedServletContainer implements EmbeddedServletContainer
+		// 将配置好的Tomcat传入进去，返回一个EmbeddedServletContainer；并且 启动 Tomcat服务器 会调用到onstart方法，TomcatStartter onStartup 被调用
 		return getTomcatWebServer(tomcat);
 	}
 
@@ -188,7 +197,7 @@ public class TomcatServletWebServerFactory extends AbstractServletWebServerFacto
 
 	protected void prepareContext(Host host, ServletContextInitializer[] initializers) {
 		File documentRoot = getValidDocumentRoot();
-		 //上下文，继承StandardContext
+		//上下文，继承StandardContext
 		TomcatEmbeddedContext context = new TomcatEmbeddedContext();
 		if (documentRoot != null) {
 			context.setResources(new LoaderHidingResourceRoot(context));
@@ -229,6 +238,7 @@ public class TomcatServletWebServerFactory extends AbstractServletWebServerFacto
 	/**
 	 * Override Tomcat's default locale mappings to align with other servers. See
 	 * {@code org.apache.catalina.util.CharsetMapperDefault.properties}.
+	 *
 	 * @param context the context to reset
 	 */
 	private void resetDefaultLocaleMapping(TomcatEmbeddedContext context) {
@@ -282,8 +292,7 @@ public class TomcatServletWebServerFactory extends AbstractServletWebServerFacto
 					.forName("org.apache.jasper.servlet.JasperInitializer", null)
 					.newInstance();
 			context.addServletContainerInitializer(initializer, null);
-		}
-		catch (Exception ex) {
+		} catch (Exception ex) {
 			// Probably not Tomcat 8
 		}
 	}
@@ -291,23 +300,30 @@ public class TomcatServletWebServerFactory extends AbstractServletWebServerFacto
 	// Needs to be protected so it can be used by subclasses
 	protected void customizeConnector(Connector connector) {
 		int port = (getPort() >= 0) ? getPort() : 0;
+		// 设置端口号 默认是 8080
 		connector.setPort(port);
+//		设置server
 		if (StringUtils.hasText(this.getServerHeader())) {
 			connector.setAttribute("server", this.getServerHeader());
 		}
+//		此时ProtocolHandler 为Http11NioProtocol,是AbstractProtocol 的子类,因此会执行该步骤,设置地址.
 		if (connector.getProtocolHandler() instanceof AbstractProtocol) {
 			customizeProtocol((AbstractProtocol<?>) connector.getProtocolHandler());
 		}
+//		设置编码,默认是 UTF-8
 		if (getUriEncoding() != null) {
 			connector.setURIEncoding(getUriEncoding().name());
 		}
 		// Don't bind to the socket prematurely if ApplicationContext is slow to start
+		// 如果配置了ssl,则进行ssl的设置,默认情况下不会执行
 		connector.setProperty("bindOnInit", "false");
 		if (getSsl() != null && getSsl().isEnabled()) {
 			customizeSsl(connector);
 		}
+//		如果配置了压缩,则进行压缩的配置,默认不会执行
 		TomcatConnectorCustomizer compression = new CompressionConnectorCustomizer(
 				getCompression());
+		// 遍历tomcatConnectorCustomizers,进行个性化配置,默认是不存在的
 		compression.customize(connector);
 		for (TomcatConnectorCustomizer customizer : this.tomcatConnectorCustomizers) {
 			customizer.customize(connector);
@@ -329,11 +345,12 @@ public class TomcatServletWebServerFactory extends AbstractServletWebServerFacto
 
 	/**
 	 * Configure the Tomcat {@link Context}.
-	 * @param context the Tomcat context
+	 *
+	 * @param context      the Tomcat context
 	 * @param initializers initializers to apply
 	 */
 	protected void configureContext(Context context,
-			ServletContextInitializer[] initializers) {
+									ServletContextInitializer[] initializers) {
 		// 执行TomcatStarter starter = new TomcatStarter(initializers);然后将其加入到context中context.addServletContainerInitializer(starter, NO_CLASSES);,则会在tomcat启动时会调用start中的onStartup方法
 		TomcatStarter starter = new TomcatStarter(initializers);
 		if (context instanceof TomcatEmbeddedContext) {
@@ -374,8 +391,7 @@ public class TomcatServletWebServerFactory extends AbstractServletWebServerFacto
 				context.setManager(manager);
 			}
 			configurePersistSession(manager);
-		}
-		else {
+		} else {
 			context.addLifecycleListener(new DisablePersistSessionListener());
 		}
 	}
@@ -406,6 +422,7 @@ public class TomcatServletWebServerFactory extends AbstractServletWebServerFacto
 	 * Post process the Tomcat {@link Context} before it's used with the Tomcat Server.
 	 * Subclasses can override this method to apply additional processing to the
 	 * {@link Context}.
+	 *
 	 * @param context the Tomcat {@link Context}
 	 */
 	protected void postProcessContext(Context context) {
@@ -415,6 +432,7 @@ public class TomcatServletWebServerFactory extends AbstractServletWebServerFacto
 	 * Factory method called to create the {@link TomcatWebServer}. Subclasses can
 	 * override this method to return a different {@link TomcatWebServer} or apply
 	 * additional processing to the Tomcat server.
+	 *
 	 * @param tomcat the Tomcat server.
 	 * @return a new {@link TomcatWebServer} instance
 	 */
@@ -434,6 +452,7 @@ public class TomcatServletWebServerFactory extends AbstractServletWebServerFacto
 
 	/**
 	 * Returns a mutable set of the patterns that match jars to ignore for TLD scanning.
+	 *
 	 * @return the list of jars to ignore for TLD scanning
 	 */
 	public Set<String> getTldSkipPatterns() {
@@ -443,6 +462,7 @@ public class TomcatServletWebServerFactory extends AbstractServletWebServerFacto
 	/**
 	 * Set the patterns that match jars to ignore for TLD scanning. See Tomcat's
 	 * catalina.properties for typical values. Defaults to a list drawn from that source.
+	 *
 	 * @param patterns the jar patterns to skip when scanning for TLDs etc
 	 */
 	public void setTldSkipPatterns(Collection<String> patterns) {
@@ -453,6 +473,7 @@ public class TomcatServletWebServerFactory extends AbstractServletWebServerFacto
 	/**
 	 * Add patterns that match jars to ignore for TLD scanning. See Tomcat's
 	 * catalina.properties for typical values.
+	 *
 	 * @param patterns the additional jar patterns to skip when scanning for TLDs etc
 	 */
 	public void addTldSkipPatterns(String... patterns) {
@@ -462,6 +483,7 @@ public class TomcatServletWebServerFactory extends AbstractServletWebServerFacto
 
 	/**
 	 * The Tomcat protocol to use when create the {@link Connector}.
+	 *
 	 * @param protocol the protocol
 	 * @see Connector#Connector(String)
 	 */
@@ -473,6 +495,7 @@ public class TomcatServletWebServerFactory extends AbstractServletWebServerFacto
 	/**
 	 * Set {@link Valve}s that should be applied to the Tomcat {@link Engine}. Calling
 	 * this method will replace any existing valves.
+	 *
 	 * @param engineValves the valves to set
 	 */
 	public void setEngineValves(Collection<? extends Valve> engineValves) {
@@ -483,6 +506,7 @@ public class TomcatServletWebServerFactory extends AbstractServletWebServerFacto
 	/**
 	 * Returns a mutable collection of the {@link Valve}s that will be applied to the
 	 * Tomcat {@link Engine}.
+	 *
 	 * @return the engine valves that will be applied
 	 */
 	public Collection<Valve> getEngineValves() {
@@ -498,6 +522,7 @@ public class TomcatServletWebServerFactory extends AbstractServletWebServerFacto
 	/**
 	 * Set {@link Valve}s that should be applied to the Tomcat {@link Context}. Calling
 	 * this method will replace any existing valves.
+	 *
 	 * @param contextValves the valves to set
 	 */
 	public void setContextValves(Collection<? extends Valve> contextValves) {
@@ -508,6 +533,7 @@ public class TomcatServletWebServerFactory extends AbstractServletWebServerFacto
 	/**
 	 * Returns a mutable collection of the {@link Valve}s that will be applied to the
 	 * Tomcat {@link Context}.
+	 *
 	 * @return the context valves that will be applied
 	 * @see #getEngineValves()
 	 */
@@ -517,6 +543,7 @@ public class TomcatServletWebServerFactory extends AbstractServletWebServerFacto
 
 	/**
 	 * Add {@link Valve}s that should be applied to the Tomcat {@link Context}.
+	 *
 	 * @param contextValves the valves to add
 	 */
 	public void addContextValves(Valve... contextValves) {
@@ -527,6 +554,7 @@ public class TomcatServletWebServerFactory extends AbstractServletWebServerFacto
 	/**
 	 * Set {@link LifecycleListener}s that should be applied to the Tomcat
 	 * {@link Context}. Calling this method will replace any existing listeners.
+	 *
 	 * @param contextLifecycleListeners the listeners to set
 	 */
 	public void setContextLifecycleListeners(
@@ -539,6 +567,7 @@ public class TomcatServletWebServerFactory extends AbstractServletWebServerFacto
 	/**
 	 * Returns a mutable collection of the {@link LifecycleListener}s that will be applied
 	 * to the Tomcat {@link Context}.
+	 *
 	 * @return the context lifecycle listeners that will be applied
 	 */
 	public Collection<LifecycleListener> getContextLifecycleListeners() {
@@ -547,6 +576,7 @@ public class TomcatServletWebServerFactory extends AbstractServletWebServerFacto
 
 	/**
 	 * Add {@link LifecycleListener}s that should be added to the Tomcat {@link Context}.
+	 *
 	 * @param contextLifecycleListeners the listeners to add
 	 */
 	public void addContextLifecycleListeners(
@@ -559,6 +589,7 @@ public class TomcatServletWebServerFactory extends AbstractServletWebServerFacto
 	/**
 	 * Set {@link TomcatContextCustomizer}s that should be applied to the Tomcat
 	 * {@link Context}. Calling this method will replace any existing customizers.
+	 *
 	 * @param tomcatContextCustomizers the customizers to set
 	 */
 	public void setTomcatContextCustomizers(
@@ -571,6 +602,7 @@ public class TomcatServletWebServerFactory extends AbstractServletWebServerFacto
 	/**
 	 * Returns a mutable collection of the {@link TomcatContextCustomizer}s that will be
 	 * applied to the Tomcat {@link Context}.
+	 *
 	 * @return the listeners that will be applied
 	 */
 	public Collection<TomcatContextCustomizer> getTomcatContextCustomizers() {
@@ -588,6 +620,7 @@ public class TomcatServletWebServerFactory extends AbstractServletWebServerFacto
 	/**
 	 * Set {@link TomcatConnectorCustomizer}s that should be applied to the Tomcat
 	 * {@link Connector}. Calling this method will replace any existing customizers.
+	 *
 	 * @param tomcatConnectorCustomizers the customizers to set
 	 */
 	public void setTomcatConnectorCustomizers(
@@ -608,6 +641,7 @@ public class TomcatServletWebServerFactory extends AbstractServletWebServerFacto
 	/**
 	 * Returns a mutable collection of the {@link TomcatConnectorCustomizer}s that will be
 	 * applied to the Tomcat {@link Connector}.
+	 *
 	 * @return the customizers that will be applied
 	 */
 	public Collection<TomcatConnectorCustomizer> getTomcatConnectorCustomizers() {
@@ -616,6 +650,7 @@ public class TomcatServletWebServerFactory extends AbstractServletWebServerFacto
 
 	/**
 	 * Add {@link Connector}s in addition to the default connector, e.g. for SSL or AJP
+	 *
 	 * @param connectors the connectors to add
 	 */
 	public void addAdditionalTomcatConnectors(Connector... connectors) {
@@ -626,6 +661,7 @@ public class TomcatServletWebServerFactory extends AbstractServletWebServerFacto
 	/**
 	 * Returns a mutable collection of the {@link Connector}s that will be added to the
 	 * Tomcat.
+	 *
 	 * @return the additionalTomcatConnectors
 	 */
 	public List<Connector> getAdditionalTomcatConnectors() {
@@ -639,6 +675,7 @@ public class TomcatServletWebServerFactory extends AbstractServletWebServerFacto
 
 	/**
 	 * Returns the character encoding to use for URL decoding.
+	 *
 	 * @return the URI encoding
 	 */
 	public Charset getUriEncoding() {
@@ -695,8 +732,7 @@ public class TomcatServletWebServerFactory extends AbstractServletWebServerFacto
 						jar = "jar:" + jar + "!/";
 					}
 					addResourceSet(jar);
-				}
-				else {
+				} else {
 					addResourceSet(url.toString());
 				}
 			}
@@ -714,8 +750,7 @@ public class TomcatServletWebServerFactory extends AbstractServletWebServerFacto
 				String path = "/META-INF/resources";
 				this.context.getResources().createWebResourceSet(
 						ResourceSetType.RESOURCE_JAR, "/", url, path);
-			}
-			catch (Exception ex) {
+			} catch (Exception ex) {
 				// Ignore (probably not a directory)
 			}
 		}
@@ -750,8 +785,7 @@ public class TomcatServletWebServerFactory extends AbstractServletWebServerFacto
 			try {
 				this.initInternal = LifecycleBase.class.getDeclaredMethod("initInternal");
 				this.initInternal.setAccessible(true);
-			}
-			catch (Exception ex) {
+			} catch (Exception ex) {
 				throw new IllegalStateException(ex);
 			}
 		}
@@ -809,8 +843,7 @@ public class TomcatServletWebServerFactory extends AbstractServletWebServerFacto
 			if (this.delegate instanceof LifecycleBase) {
 				try {
 					ReflectionUtils.invokeMethod(this.initInternal, this.delegate);
-				}
-				catch (Exception ex) {
+				} catch (Exception ex) {
 					throw new LifecycleException(ex);
 				}
 			}
