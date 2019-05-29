@@ -165,6 +165,7 @@ public class TomcatServletWebServerFactory extends AbstractServletWebServerFacto
 		tomcat.setBaseDir(baseDir.getAbsolutePath());
 		Connector connector = new Connector(this.protocol);
 		tomcat.getService().addConnector(connector);
+		// 设置端口等其他connector配置信息
 		customizeConnector(connector);
 		tomcat.setConnector(connector);
 		tomcat.getHost().setAutoDeploy(false);
@@ -187,6 +188,7 @@ public class TomcatServletWebServerFactory extends AbstractServletWebServerFacto
 
 	protected void prepareContext(Host host, ServletContextInitializer[] initializers) {
 		File documentRoot = getValidDocumentRoot();
+		 //上下文，继承StandardContext
 		TomcatEmbeddedContext context = new TomcatEmbeddedContext();
 		if (documentRoot != null) {
 			context.setResources(new LoaderHidingResourceRoot(context));
@@ -332,7 +334,7 @@ public class TomcatServletWebServerFactory extends AbstractServletWebServerFacto
 	 */
 	protected void configureContext(Context context,
 			ServletContextInitializer[] initializers) {
-		//
+		// 执行TomcatStarter starter = new TomcatStarter(initializers);然后将其加入到context中context.addServletContainerInitializer(starter, NO_CLASSES);,则会在tomcat启动时会调用start中的onStartup方法
 		TomcatStarter starter = new TomcatStarter(initializers);
 		if (context instanceof TomcatEmbeddedContext) {
 			TomcatEmbeddedContext embeddedContext = (TomcatEmbeddedContext) context;
