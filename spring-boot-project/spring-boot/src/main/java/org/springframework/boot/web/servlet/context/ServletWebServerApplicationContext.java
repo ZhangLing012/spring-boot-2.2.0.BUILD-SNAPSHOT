@@ -245,6 +245,7 @@ public class ServletWebServerApplicationContext extends GenericWebApplicationCon
 				servletContext);
 		// TomcatStarter 的 debug 信息中，第一个 ServletContextInitializer 就是出现在 EmbeddedWebApplicationContext (当前版本为当期类)中的一个匿名类，没错了，就是这里的 getSelfInitializer() 方法创建的！解释下这里的 getSelfInitializer() 和 selfInitialize(ServletContext servletContext) 为什么要这么设计：这是典型的回调式方式，当匿名 ServletContextInitializer 类被 TomcatStarter 的 onStartup 方法调用，设计上是触发了 selfInitialize(ServletContext servletContext) 的调用。所以这下就清晰了，为什么 TomcatStarter 中没有出现 RegisterBean ，其实是隐式触发了 EmbeddedWebApplicationContext 中的 selfInitialize 方法。selfInitialize 方法中的 getServletContextInitializerBeans() 成了关键。
 		//getSelfInitializer方法获得的Servlet初始化器内部会去构造一个ServletContextInitializerBeans(Servlet初始化器的集合)，ServletContextInitializerBeans构造的时候会去Spring容器中查找ServletContextInitializer类型的bean，其中ServletRegistrationBean、FilterRegistrationBean、ServletListenerRegistrationBean会被找出(如果有定义)，这3种ServletContextInitializer会在onStartup方法中将Servlet、Filter、Listener添加到Servlet容器中(如果我们只定义了Servlet、Filter或者Listener，ServletContextInitializerBeans内部会调用addAdaptableBeans方法把它们包装成RegistrationBean)：
+
 		for (ServletContextInitializer beans : getServletContextInitializerBeans()) {
 			beans.onStartup(servletContext);
 		}
