@@ -314,6 +314,7 @@ public class ConfigFileApplicationListener
 					this.environment);
 			this.resourceLoader = (resourceLoader != null) ? resourceLoader
 					: new DefaultResourceLoader();
+			// 加载了PropertiesPropertySourceLoader(后缀格式 "properties","xml")以及YamlPropertySourceLoader("yml","yaml")类实例
 			this.propertySourceLoaders = SpringFactoriesLoader.loadFactories(
 					PropertySourceLoader.class, getClass().getClassLoader());
 		}
@@ -449,6 +450,14 @@ public class ConfigFileApplicationListener
 			});
 		}
 
+		/***
+		 * 解析完路径和配置文件名以后，将开始判断路径+名称组合是否存在  执行load(...)方法
+		 * @param location
+		 * @param name
+		 * @param profile
+		 * @param filterFactory
+		 * @param consumer
+		 */
 		private void load(String location, String name, Profile profile,
 				DocumentFilterFactory filterFactory, DocumentConsumer consumer) {
 			if (!StringUtils.hasText(name)) {
@@ -462,6 +471,7 @@ public class ConfigFileApplicationListener
 			}
 			Set<String> processed = new HashSet<>();
 			for (PropertySourceLoader loader : this.propertySourceLoaders) {
+				// 文件后缀
 				for (String fileExtension : loader.getFileExtensions()) {
 					if (processed.add(fileExtension)) {
 						loadForFileExtension(loader, location + name, "." + fileExtension,
@@ -636,6 +646,9 @@ public class ConfigFileApplicationListener
 			this.environment.addActiveProfile(profile);
 		}
 
+		/**
+		 * 首先看CONFIG_LOCATION_PROPERTY(spring.config.location)是否存在配置，无则走默认配置路径DEFAULT_SEARCH_LOCATIONS(classpath:/,classpath:/config/,file:./,file:./config/)
+		 */
 		private Set<String> getSearchLocations() {
 			if (this.environment.containsProperty(CONFIG_LOCATION_PROPERTY)) {
 				return getSearchLocations(CONFIG_LOCATION_PROPERTY);
@@ -665,6 +678,9 @@ public class ConfigFileApplicationListener
 			return locations;
 		}
 
+		/**
+		 * 优先看CONFIG_NAME_PROPERTY(spring.config.name)配置，否则走DEFAULT_NAMES(application)
+		 */
 		private Set<String> getSearchNames() {
 			if (this.environment.containsProperty(CONFIG_NAME_PROPERTY)) {
 				String property = this.environment.getProperty(CONFIG_NAME_PROPERTY);
