@@ -349,6 +349,7 @@ public class ConfigFileApplicationListener
 			// The default profile for these purposes is represented as null. We add it
 			// first so that it is processed first and has lowest priority.
 			this.profiles.add(null);
+//			获取当前profiles激活的环境，默认为default
 			Set<Profile> activatedViaProperty = getProfilesActivatedViaProperty();
 			this.profiles.addAll(getOtherActiveProfiles(activatedViaProperty));
 			// Any pre-existing active profiles set via property sources (e.g.
@@ -650,11 +651,13 @@ public class ConfigFileApplicationListener
 		 * 首先看CONFIG_LOCATION_PROPERTY(spring.config.location)是否存在配置，无则走默认配置路径DEFAULT_SEARCH_LOCATIONS(classpath:/,classpath:/config/,file:./,file:./config/)
 		 */
 		private Set<String> getSearchLocations() {
+			  //用户自定义的配置文件，优先加载，通过spring.config.location指定
 			if (this.environment.containsProperty(CONFIG_LOCATION_PROPERTY)) {
 				return getSearchLocations(CONFIG_LOCATION_PROPERTY);
 			}
 			Set<String> locations = getSearchLocations(
 					CONFIG_ADDITIONAL_LOCATION_PROPERTY);
+			// 	获取查找路径
 			locations.addAll(
 					asResolvedSet(ConfigFileApplicationListener.this.searchLocations,
 							DEFAULT_SEARCH_LOCATIONS));
@@ -682,10 +685,12 @@ public class ConfigFileApplicationListener
 		 * 优先看CONFIG_NAME_PROPERTY(spring.config.name)配置，否则走DEFAULT_NAMES(application)
 		 */
 		private Set<String> getSearchNames() {
+			 //如果环境中有以spring.config.name的配置，则以该值作为配置文件名
 			if (this.environment.containsProperty(CONFIG_NAME_PROPERTY)) {
 				String property = this.environment.getProperty(CONFIG_NAME_PROPERTY);
 				return asResolvedSet(property, null);
 			}
+			//获取默认的配置文件名，默认为application
 			return asResolvedSet(ConfigFileApplicationListener.this.names, DEFAULT_NAMES);
 		}
 
@@ -693,6 +698,7 @@ public class ConfigFileApplicationListener
 			List<String> list = Arrays.asList(StringUtils.trimArrayElements(
 					StringUtils.commaDelimitedListToStringArray((value != null)
 							? this.environment.resolvePlaceholders(value) : fallback)));
+			//将元素进行反转，所以查找的路径实际跟DEFAULT_SEARCH_LOCATIONS所定义的顺序刚好相反。
 			Collections.reverse(list);
 			return new LinkedHashSet<>(list);
 		}
