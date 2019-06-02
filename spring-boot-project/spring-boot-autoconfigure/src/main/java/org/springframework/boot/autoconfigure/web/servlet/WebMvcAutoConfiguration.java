@@ -331,6 +331,8 @@ public class WebMvcAutoConfiguration {
 			Duration cachePeriod = this.resourceProperties.getCache().getPeriod();
 			CacheControl cacheControl = this.resourceProperties.getCache()
 					.getCachecontrol().toHttpCacheControl();
+			// 如果是/webjars/**请求，则将其映射到classpath:/META-INF/resources/webjars/目录下
+			// webjars：以jar包的方式引入的静态资源
 			if (!registry.hasMappingForPattern("/webjars/**")) {
 				customizeResourceHandlerRegistration(registry
 						.addResourceHandler("/webjars/**")
@@ -339,6 +341,7 @@ public class WebMvcAutoConfiguration {
 						.setCacheControl(cacheControl));
 			}
 			String staticPathPattern = this.mvcProperties.getStaticPathPattern();
+			 // 如果是请求/**， 将其映射到上述 staticLocations 指定的值
 			if (!registry.hasMappingForPattern(staticPathPattern)) {
 				customizeResourceHandlerRegistration(
 						registry.addResourceHandler(staticPathPattern)
@@ -353,11 +356,13 @@ public class WebMvcAutoConfiguration {
 			return (cachePeriod != null) ? (int) cachePeriod.getSeconds() : null;
 		}
 
+		// 欢迎页
 		@Bean
 		public WelcomePageHandlerMapping welcomePageHandlerMapping(
 				ApplicationContext applicationContext) {
 			return new WelcomePageHandlerMapping(
 					new TemplateAvailabilityProviders(applicationContext),
+					//
 					applicationContext, getWelcomePage(),
 					this.mvcProperties.getStaticPathPattern());
 		}
@@ -372,6 +377,7 @@ public class WebMvcAutoConfiguration {
 		}
 
 		private Optional<Resource> getWelcomePage() {
+			// 静态资源文件夹下的所有index.html页面会被/**映射。
 			String[] locations = getResourceLocations(
 					this.resourceProperties.getStaticLocations());
 			return Arrays.stream(locations).map(this::getIndexHtml)

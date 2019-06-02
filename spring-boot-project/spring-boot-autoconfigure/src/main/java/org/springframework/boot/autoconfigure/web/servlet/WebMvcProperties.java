@@ -28,7 +28,7 @@ import org.springframework.validation.DefaultMessageCodesResolver;
 
 /**
  * {@link ConfigurationProperties properties} for Spring MVC.
- *
+ * WebMvc配置类
  * @author Phillip Webb
  * @author Sébastien Deleuze
  * @author Stephane Nicoll
@@ -89,7 +89,8 @@ public class WebMvcProperties {
 	private boolean logResolvedException = false;
 
 	/**
-	 * Path pattern used for static resources.
+	 * Path pattern used for static resources
+	 *  静态资源的路径pattern
 	 */
 	private String staticPathPattern = "/**";
 

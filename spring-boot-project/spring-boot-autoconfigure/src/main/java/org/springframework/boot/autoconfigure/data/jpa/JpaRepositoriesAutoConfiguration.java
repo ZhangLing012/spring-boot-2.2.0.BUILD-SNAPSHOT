@@ -66,7 +66,7 @@ import org.springframework.data.jpa.repository.support.JpaRepositoryFactoryBean;
 		JpaRepositoryConfigExtension.class })
 @ConditionalOnProperty(prefix = "spring.data.jpa.repositories", name = "enabled", havingValue = "true", matchIfMissing = true)
 @Import(JpaRepositoriesAutoConfigureRegistrar.class)
-//
+// spring-data-jpa底层使用的是Hibernate作为实现，所以jpa的自动配置操作在Hibernate的自动配置之后
 @AutoConfigureAfter({ HibernateJpaAutoConfiguration.class,
 		TaskExecutionAutoConfiguration.class })
 public class JpaRepositoriesAutoConfiguration {
