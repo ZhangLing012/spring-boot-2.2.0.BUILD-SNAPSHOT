@@ -319,6 +319,8 @@ public class SpringApplication {
 		// 3、设置系统属性 `java.awt.headless` 的值，默认值为：true
 		configureHeadlessProperty();
 		// 4、创建所有 Spring 运行监听器并发布应用启动事件
+//		这里会初始化Spring Boot自带的监听器，以及添加到SpringApplication的自定义监听器。 初始化??
+		// EventPublishingRunListener
 		SpringApplicationRunListeners listeners = getRunListeners(args);
 		//发布ApplicationStartedEvent
 		listeners.starting();
@@ -332,7 +334,7 @@ public class SpringApplication {
 			configureIgnoreBeanInfo(environment);
 			// 7、创建 Banner 打印类
 			Banner printedBanner = printBanner(environment);
-			// 8、创建应用上下文
+			// 8、创建应用上下文 IOC容器
 			context = createApplicationContext();
 			// 9、准备异常报告器
 			exceptionReporters = getSpringFactoriesInstances(
@@ -341,7 +343,7 @@ public class SpringApplication {
 			// 10、准备应用上下文
 			prepareContext(context, environment, listeners, applicationArguments,
 					printedBanner);
-			// 11、刷新应用上下文
+			// 11、刷新应用上下文 刷新IOC容器【创建IOC容器对象，并初始化容器，创建容器中每一个组件】：
 			refreshContext(context);
 			// 12、应用上下文刷新后置处理
 			afterRefresh(context, applicationArguments);
@@ -453,8 +455,11 @@ public class SpringApplication {
 				SYSTEM_PROPERTY_JAVA_AWT_HEADLESS, Boolean.toString(this.headless)));
 	}
 
+	// 获取执行时监听的集合?
 	private SpringApplicationRunListeners getRunListeners(String[] args) {
 		Class<?>[] types = new Class<?>[]{SpringApplication.class, String[].class};
+
+
 		return new SpringApplicationRunListeners(logger, getSpringFactoriesInstances(
 				SpringApplicationRunListener.class, types, this, args));
 	}
@@ -462,7 +467,6 @@ public class SpringApplication {
 	private <T> Collection<T> getSpringFactoriesInstances(Class<T> type) {
 		return getSpringFactoriesInstances(type, new Class<?>[]{});
 	}
-
 	private <T> Collection<T> getSpringFactoriesInstances(Class<T> type,
 														  Class<?>[] parameterTypes, Object... args) {
 		// 5.1）获取当前线程上下文类加载器
@@ -471,6 +475,7 @@ public class SpringApplication {
 		// 5.2）获取 ApplicationContextInitializer 的实例名称集合并去重
 		// loadFactoryNames 根据类路径下的 META-INF/spring.factories 文件解析并获取 ApplicationContextInitializer 接口的所有配置的类路径名称
 		// 使用Set保存names来避免重复元素
+		// type 为传入的class ApplicationContextInitializer   ApplicationListener
 		Set<String> names = new LinkedHashSet<>(
 				SpringFactoriesLoader.loadFactoryNames(type, classLoader));
 		// 5.3）根据以上类路径创建初始化器实例列表
