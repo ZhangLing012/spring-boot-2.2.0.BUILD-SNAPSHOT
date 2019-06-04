@@ -69,6 +69,7 @@ public class RandomValuePropertySource extends PropertySource<Random> {
 		this(RANDOM_PROPERTY_SOURCE_NAME);
 	}
 
+	//	如何从Random中获取值
 	@Override
 	public Object getProperty(String name) {
 		if (!name.startsWith(PREFIX)) {
@@ -136,6 +137,7 @@ public class RandomValuePropertySource extends PropertySource<Random> {
 		return DigestUtils.md5DigestAsHex(bytes);
 	}
 
+	// 将随机方法放入到PropertySources中
 	public static void addToEnvironment(ConfigurableEnvironment environment) {
 		environment.getPropertySources().addAfter(
 				StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME,

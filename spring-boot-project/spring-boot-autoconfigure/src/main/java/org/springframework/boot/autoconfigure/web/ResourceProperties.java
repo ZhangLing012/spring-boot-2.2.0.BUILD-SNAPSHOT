@@ -27,7 +27,7 @@ import org.springframework.http.CacheControl;
 
 /**
  * Properties used to configure resource handling.
- *
+ * Spring Boot静态资源配置类
  * @author Phillip Webb
  * @author Brian Clozel
  * @author Dave Syer

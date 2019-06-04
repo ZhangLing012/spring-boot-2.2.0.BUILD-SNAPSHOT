@@ -103,7 +103,7 @@ public class TomcatWebServer implements WebServer {
 				});
 
 				// Start the server to trigger initialization listeners
-				// tomcat 启动
+				// tomcat 启动 嵌入式的Servlet容器
 				this.tomcat.start();
 
 				// We can re-throw failure exception directly in the main thread

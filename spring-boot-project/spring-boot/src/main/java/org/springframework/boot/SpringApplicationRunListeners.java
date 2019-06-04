@@ -44,6 +44,7 @@ class SpringApplicationRunListeners {
 	}
 
 	public void starting() {
+		// EventPublishingRunListener
 		for (SpringApplicationRunListener listener : this.listeners) {
 			listener.starting();
 		}

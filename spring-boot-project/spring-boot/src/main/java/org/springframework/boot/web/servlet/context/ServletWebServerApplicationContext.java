@@ -184,7 +184,7 @@ public class ServletWebServerApplicationContext extends GenericWebApplicationCon
 		ServletContext servletContext = getServletContext();
 		 // 内置Servlet容器和ServletContext都还没初始化的时候执行
 		if (webServer == null && servletContext == null) {
-			  //1.5  从Spring容器中获取EmbeddedServletContainerFactory，如果EmbeddedServletContainerFactory不存在或者有多个的话会抛出异常中止程序
+			//1.5  从Spring ioc容器中获取EmbeddedServletContainerFactory，如果EmbeddedServletContainerFactory不存在或者有多个的话会抛出异常中止程序
 			 // factory得到的具体实现是TomcatServletWebServerFactory
 			ServletWebServerFactory factory = getWebServerFactory();
 			// getSelfInitializer

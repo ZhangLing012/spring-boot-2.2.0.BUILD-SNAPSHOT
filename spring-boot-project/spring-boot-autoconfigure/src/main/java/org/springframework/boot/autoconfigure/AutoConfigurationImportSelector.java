@@ -120,6 +120,7 @@ public class AutoConfigurationImportSelector
 		}
 		AnnotationAttributes attributes = getAttributes(annotationMetadata);
 		// 返回了自动配置类的信息列表
+		//会给容器中注入众多的自动配置类（xxxAutoConfiguration），就是给容器中导入这个场景需要的所有组件，并配置好这些组件。
 		List<String> configurations = getCandidateConfigurations(annotationMetadata,
 				attributes);
 		configurations = removeDuplicates(configurations);
