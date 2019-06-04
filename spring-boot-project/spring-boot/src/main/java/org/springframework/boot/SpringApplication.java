@@ -334,7 +334,7 @@ public class SpringApplication {
 			configureIgnoreBeanInfo(environment);
 			// 7、创建 Banner 打印类
 			Banner printedBanner = printBanner(environment);
-			// 8、创建应用上下文
+			// 8、创建应用上下文 IOC容器
 			context = createApplicationContext();
 			// 9、准备异常报告器
 			exceptionReporters = getSpringFactoriesInstances(
@@ -343,7 +343,7 @@ public class SpringApplication {
 			// 10、准备应用上下文
 			prepareContext(context, environment, listeners, applicationArguments,
 					printedBanner);
-			// 11、刷新应用上下文
+			// 11、刷新应用上下文 刷新IOC容器【创建IOC容器对象，并初始化容器，创建容器中每一个组件】：
 			refreshContext(context);
 			// 12、应用上下文刷新后置处理
 			afterRefresh(context, applicationArguments);

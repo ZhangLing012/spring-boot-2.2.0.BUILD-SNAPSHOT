@@ -54,6 +54,7 @@ public class WebServerFactoryCustomizerBeanPostProcessor
 		this.beanFactory = (ListableBeanFactory) beanFactory;
 	}
 
+	//初始化之前
 	@Override
 	public Object postProcessBeforeInitialization(Object bean, String beanName)
 			throws BeansException {
@@ -80,6 +81,8 @@ public class WebServerFactoryCustomizerBeanPostProcessor
 				.invoke((customizer) -> customizer.customize(webServerFactory));
 	}
 
+	// 从IOC容器中获取所有类型为EmbeddedServletContainerCustomizer的定制器
+//	可以向容器中添加一个自定义的EmbeddedServletContainerCustomizer类型的组件，用于自定义属性配置，然后在导入的后置处理器中获取到该组件，并调用该自定义组件的customize方法，来修改默认的属性配置
 	private Collection<WebServerFactoryCustomizer<?>> getCustomizers() {
 		if (this.customizers == null) {
 			// Look up does not include the parent context
@@ -91,7 +94,7 @@ public class WebServerFactoryCustomizerBeanPostProcessor
 		return this.customizers;
 	}
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@SuppressWarnings({"unchecked", "rawtypes"})
 	private Collection<WebServerFactoryCustomizer<?>> getWebServerFactoryCustomizerBeans() {
 		return (Collection) this.beanFactory
 				.getBeansOfType(WebServerFactoryCustomizer.class, false, false).values();

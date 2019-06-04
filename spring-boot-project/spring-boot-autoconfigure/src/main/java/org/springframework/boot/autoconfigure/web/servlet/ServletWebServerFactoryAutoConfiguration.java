@@ -49,6 +49,8 @@ import org.springframework.util.ObjectUtils;
  * @author Ivan Sopov
  * @author Brian Clozel
  * @author Stephane Nicoll
+ *
+ * EmbeddedServletContainerAutoConfiguration
  */
 @Configuration
 @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
@@ -80,7 +82,7 @@ public class ServletWebServerFactoryAutoConfiguration {
 	 *
 	 *
 	 *
-	 *  * 在EmbeddedServletContainerAutoConfiguration自动化配置类中被导入，
+	 *  * 在EmbeddedServletContainerAutoConfiguration(ServletWebServerFactoryAutoConfiguration)即当前类自动化配置类中被导入，
 	 *  * 实现了BeanFactoryAware接口(BeanFactory会被自动注入进来)和ImportBeanDefinitionRegistrar接口
 	 *  * (会被ConfigurationClassBeanDefinitionReader解析并注册到Spring容器中)
 	 *  */
@@ -102,8 +104,8 @@ public class ServletWebServerFactoryAutoConfiguration {
 			if (this.beanFactory == null) {
 				return;
 			}
-			// 如果Spring容器中不存在EmbeddedServletContainerCustomizerBeanPostProcessor类型的bean
-			// 那么就注册一个
+			//注册了一个EmbeddedServletContainerCustomizerBeanPostProcessor后置处理器的Bean
+			// 在bean初始化前(创建完成，还未属性赋值)，会执行初始化工作
 			registerSyntheticBeanIfMissing(registry,
 					"webServerFactoryCustomizerBeanPostProcessor",
 					WebServerFactoryCustomizerBeanPostProcessor.class);
