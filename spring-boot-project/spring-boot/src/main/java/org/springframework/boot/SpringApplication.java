@@ -407,8 +407,11 @@ public class SpringApplication {
 								ConfigurableEnvironment environment, SpringApplicationRunListeners listeners,
 								ApplicationArguments applicationArguments, Banner printedBanner) {
 		// 10.1）绑定环境到上下文
+		// {@link AbstractApplicationContext.createEnvironment}
+		// spring 上下文准备阶段
 		context.setEnvironment(environment);
 		// 10.2）配置上下文的 bean 生成器及资源加载器
+		// spring 应用上下文后置处理
 		postProcessApplicationContext(context);
 		// 10.3）为上下文应用所有初始化器
 		applyInitializers(context);
@@ -456,8 +459,9 @@ public class SpringApplication {
 	}
 
 	// 获取执行时监听的集合?
+	// SpringApplicationRunListener 是spring boot 应用运行时监听器，不是事件监听器
 	private SpringApplicationRunListeners getRunListeners(String[] args) {
-		//SpringApplicationRunListener构造器参数必须依次为SpringApplication和String[]类型
+		// 限定了SpringApplicationRunListener的构造器参数,必须依次为SpringApplication和String[]类型
 		Class<?>[] types = new Class<?>[]{SpringApplication.class, String[].class};
 
 		return new SpringApplicationRunListeners(logger, getSpringFactoriesInstances(
@@ -509,6 +513,10 @@ public class SpringApplication {
 		return instances;
 	}
 
+	/***
+	 *
+	 * @return
+	 */
 	private ConfigurableEnvironment getOrCreateEnvironment() {
 		if (this.environment != null) {
 			return this.environment;
@@ -668,17 +676,19 @@ public class SpringApplication {
 	}
 
 	/**
-	 * Apply any relevant post processing the {@link ApplicationContext}. Subclasses can
-	 * apply additional processing as required.
+	 * Apply any relevant post processing the {@link ApplicationContext}. Subclasses（子类） can
+	 * apply additional（额外） processing as required（需要）.
 	 *
 	 * @param context the application context
 	 */
 	protected void postProcessApplicationContext(ConfigurableApplicationContext context) {
+		// bean 名
 		if (this.beanNameGenerator != null) {
 			context.getBeanFactory().registerSingleton(
 					AnnotationConfigUtils.CONFIGURATION_BEAN_NAME_GENERATOR,
 					this.beanNameGenerator);
 		}
+		// 覆盖当前spring 上下文默认所关联的resourceLoader ClassLoader
 		if (this.resourceLoader != null) {
 			if (context instanceof GenericApplicationContext) {
 				((GenericApplicationContext) context)
@@ -1295,6 +1305,10 @@ public class SpringApplication {
 	 * will be applied to the Spring {@link ApplicationContext}.
 	 *
 	 * @return the initializers
+	 * 排序并去重
+	 * 不希望同一个ApplicationContextInitializer初始化多次，不过无法保证实现类重写hashcode 和 euqals
+	 * 如果initializers中的实例完全来自springapplication构造器，那么已经排序
+	 * 还可能来自addInitializers
 	 */
 	public Set<ApplicationContextInitializer<?>> getInitializers() {
 		return asUnmodifiableOrderedSet(this.initializers);
