@@ -275,7 +275,7 @@ public class SpringApplication {
 		// 5、设置应用上线文初始化器
 		// setInitializers初始化一个 ApplicationContextInitializer 应用上下文初始化器实例的集合。
 		// ApplicationContextInitializer 用来初始化指定的 Spring 应用上下文，如注册属性资源、激活 Profiles 等。
-		// 利用 Spring 工厂加载机制，实例化 ApplicationContextInitializer 实现类，并排序对象集合。
+		// 利用 Spring 工厂加载机制，实例化 ApplicationContextInitializer 实现类(必须存在默认构造函数)，并排序对象集合。
 		setInitializers((Collection) getSpringFactoriesInstances(ApplicationContextInitializer.class));
 		// 6、设置监听器
 		// ApplicationListener这个接口继承了 JDK 的 java.util.EventListener 接口，实现了观察者模式，它一般用来定义感兴趣的事件类型，事件类型限定于 ApplicationEvent 的子类，这同样继承了 JDK 的 java.util.EventObject 接口
@@ -457,8 +457,8 @@ public class SpringApplication {
 
 	// 获取执行时监听的集合?
 	private SpringApplicationRunListeners getRunListeners(String[] args) {
+		//SpringApplicationRunListener构造器参数必须依次为SpringApplication和String[]类型
 		Class<?>[] types = new Class<?>[]{SpringApplication.class, String[].class};
-
 
 		return new SpringApplicationRunListeners(logger, getSpringFactoriesInstances(
 				SpringApplicationRunListener.class, types, this, args));
