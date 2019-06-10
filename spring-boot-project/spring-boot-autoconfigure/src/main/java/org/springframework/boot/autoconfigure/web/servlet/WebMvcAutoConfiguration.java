@@ -341,7 +341,7 @@ public class WebMvcAutoConfiguration {
 						.setCacheControl(cacheControl));
 			}
 			String staticPathPattern = this.mvcProperties.getStaticPathPattern();
-			 // 如果是请求/**， 将其映射到上述 staticLocations 指定的值
+			// 如果是请求/**， 将其映射到上述 staticLocations 指定的值
 			if (!registry.hasMappingForPattern(staticPathPattern)) {
 				customizeResourceHandlerRegistration(
 						registry.addResourceHandler(staticPathPattern)

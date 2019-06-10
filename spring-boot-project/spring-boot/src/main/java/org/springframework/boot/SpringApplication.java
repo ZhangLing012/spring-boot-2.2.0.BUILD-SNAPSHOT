@@ -320,7 +320,7 @@ public class SpringApplication {
 		configureHeadlessProperty();
 		// 4、创建所有 Spring 运行监听器并发布应用启动事件
 //		这里会初始化Spring Boot自带的监听器，以及添加到SpringApplication的自定义监听器。 初始化??
-        // EventPublishingRunListener
+		// EventPublishingRunListener
 		SpringApplicationRunListeners listeners = getRunListeners(args);
 		//发布ApplicationStartedEvent
 		listeners.starting();
@@ -475,10 +475,12 @@ public class SpringApplication {
 		// Use names and ensure unique to protect against duplicates
 		// 5.2）获取 ApplicationContextInitializer 的实例名称集合并去重
 		// loadFactoryNames 根据类路径下的 META-INF/spring.factories 文件解析并获取 ApplicationContextInitializer 接口的所有配置的类路径名称
+		// 使用Set保存names来避免重复元素
 		// type 为传入的class ApplicationContextInitializer   ApplicationListener
 		Set<String> names = new LinkedHashSet<>(
 				SpringFactoriesLoader.loadFactoryNames(type, classLoader));
 		// 5.3）根据以上类路径创建初始化器实例列表
+		// 根据names来进行实例化
 		List<T> instances = createSpringFactoriesInstances(type, parameterTypes,
 				classLoader, args, names);
 		// 5.4）初始化器实例列表排序
@@ -1358,6 +1360,7 @@ public class SpringApplication {
 	 */
 	public static ConfigurableApplicationContext run(Class<?>[] primarySources,
 													 String[] args) {
+		// 首先初始化了SpringApplication,然后调用其实例方法:run.
 		return new SpringApplication(primarySources).run(args);
 	}
 

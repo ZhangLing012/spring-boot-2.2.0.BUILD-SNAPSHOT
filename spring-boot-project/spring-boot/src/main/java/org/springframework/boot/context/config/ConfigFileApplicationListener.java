@@ -460,7 +460,7 @@ public class ConfigFileApplicationListener
 		 * @param consumer
 		 */
 		private void load(String location, String name, Profile profile,
-				DocumentFilterFactory filterFactory, DocumentConsumer consumer) {
+						  DocumentFilterFactory filterFactory, DocumentConsumer consumer) {
 			if (!StringUtils.hasText(name)) {
 				for (PropertySourceLoader loader : this.propertySourceLoaders) {
 					if (canLoadFileExtension(loader, location)) {
@@ -651,7 +651,7 @@ public class ConfigFileApplicationListener
 		 * 首先看CONFIG_LOCATION_PROPERTY(spring.config.location)是否存在配置，无则走默认配置路径DEFAULT_SEARCH_LOCATIONS(classpath:/,classpath:/config/,file:./,file:./config/)
 		 */
 		private Set<String> getSearchLocations() {
-			  //用户自定义的配置文件，优先加载，通过spring.config.location指定
+			//用户自定义的配置文件，优先加载，通过spring.config.location指定
 			if (this.environment.containsProperty(CONFIG_LOCATION_PROPERTY)) {
 				return getSearchLocations(CONFIG_LOCATION_PROPERTY);
 			}
@@ -685,7 +685,7 @@ public class ConfigFileApplicationListener
 		 * 优先看CONFIG_NAME_PROPERTY(spring.config.name)配置，否则走DEFAULT_NAMES(application)
 		 */
 		private Set<String> getSearchNames() {
-			 //如果环境中有以spring.config.name的配置，则以该值作为配置文件名
+			//如果环境中有以spring.config.name的配置，则以该值作为配置文件名
 			if (this.environment.containsProperty(CONFIG_NAME_PROPERTY)) {
 				String property = this.environment.getProperty(CONFIG_NAME_PROPERTY);
 				return asResolvedSet(property, null);
