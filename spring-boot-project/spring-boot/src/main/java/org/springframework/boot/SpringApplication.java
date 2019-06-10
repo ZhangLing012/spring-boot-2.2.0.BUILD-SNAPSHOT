@@ -407,6 +407,7 @@ public class SpringApplication {
 								ConfigurableEnvironment environment, SpringApplicationRunListeners listeners,
 								ApplicationArguments applicationArguments, Banner printedBanner) {
 		// 10.1）绑定环境到上下文
+		// {@link AbstractApplicationContext.createEnvironment}
 		context.setEnvironment(environment);
 		// 10.2）配置上下文的 bean 生成器及资源加载器
 		postProcessApplicationContext(context);
@@ -457,8 +458,8 @@ public class SpringApplication {
 
 	// 获取执行时监听的集合?
 	private SpringApplicationRunListeners getRunListeners(String[] args) {
+		// 限定了SpringApplicationRunListener的构造器参数
 		Class<?>[] types = new Class<?>[]{SpringApplication.class, String[].class};
-
 
 		return new SpringApplicationRunListeners(logger, getSpringFactoriesInstances(
 				SpringApplicationRunListener.class, types, this, args));
@@ -507,6 +508,10 @@ public class SpringApplication {
 		return instances;
 	}
 
+	/***
+	 *
+	 * @return
+	 */
 	private ConfigurableEnvironment getOrCreateEnvironment() {
 		if (this.environment != null) {
 			return this.environment;
