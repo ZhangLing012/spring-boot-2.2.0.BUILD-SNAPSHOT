@@ -16,23 +16,8 @@
 
 package org.springframework.boot;
 
-import java.lang.reflect.Constructor;
-import java.security.AccessControlException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.CachedIntrospectionResults;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -81,6 +66,10 @@ import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StopWatch;
 import org.springframework.util.StringUtils;
 import org.springframework.web.context.support.StandardServletEnvironment;
+
+import java.lang.reflect.Constructor;
+import java.security.AccessControlException;
+import java.util.*;
 
 /**
  * Class that can be used to bootstrap and launch a Spring application from a Java main
@@ -319,16 +308,22 @@ public class SpringApplication {
 		// 3、设置系统属性 `java.awt.headless` 的值，默认值为：true
 		configureHeadlessProperty();
 		// 4、创建所有 Spring 运行监听器并发布应用启动事件
-//		这里会初始化Spring Boot自带的监听器，以及添加到SpringApplication的自定义监听器。 初始化??
+		//		这里会初始化Spring Boot自带的监听器，以及添加到SpringApplication的自定义监听器。 初始化??
 		// EventPublishingRunListener
+		//通过*SpringFactoriesLoader*检索*META-INF/spring.factories*，
+		//找到声明的所有SpringApplicationRunListener的实现类并将其实例化，
+		//之后逐个调用其started()方法，广播SpringBoot要开始执行了
 		SpringApplicationRunListeners listeners = getRunListeners(args);
 		//发布ApplicationStartedEvent
+		//发布应用开始启动事件
 		listeners.starting();
 		try {
 			// 5、初始化默认应用参数类
 			ApplicationArguments applicationArguments = new DefaultApplicationArguments(
 					args);
 			// 6、根据运行监听器和应用参数来准备 Spring 环境
+			//创建并配置当前SpringBoot应用将要使用的Environment（包括配置要使用的PropertySource以及Profile）,
+			//并遍历调用所有的SpringApplicationRunListener的environmentPrepared()方法，广播Environment准备完毕。
 			ConfigurableEnvironment environment = prepareEnvironment(listeners,
 					applicationArguments);
 			configureIgnoreBeanInfo(environment);
@@ -337,10 +332,12 @@ public class SpringApplication {
 			// 8、创建应用上下文 IOC容器
 			context = createApplicationContext();
 			// 9、准备异常报告器
+			//通过*SpringFactoriesLoader*检索*META-INF/spring.factories*，获取并实例化异常分析器
 			exceptionReporters = getSpringFactoriesInstances(
 					SpringBootExceptionReporter.class,
 					new Class[]{ConfigurableApplicationContext.class}, context);
 			// 10、准备应用上下文
+			//　为ApplicationContext加载environment，之后逐个执行ApplicationContextInitializer的initialize()方法来进一步封装ApplicationContext，并调用所有的SpringApplicationRunListener的contextPrepared()方法，【EventPublishingRunListener只提供了一个空的contextPrepared()方法】，之后初始化IoC容器，并调用SpringApplicationRunListener的contextLoaded()方法，广播ApplicationContext的IoC加载完成，这里就包括通过**@EnableAutoConfiguration**导入的各种自动配置类。
 			prepareContext(context, environment, listeners, applicationArguments,
 					printedBanner);
 			// 11、刷新应用上下文 刷新IOC容器【创建IOC容器对象，并初始化容器，创建容器中每一个组件】：
@@ -468,6 +465,7 @@ public class SpringApplication {
 	private <T> Collection<T> getSpringFactoriesInstances(Class<T> type) {
 		return getSpringFactoriesInstances(type, new Class<?>[]{});
 	}
+
 	private <T> Collection<T> getSpringFactoriesInstances(Class<T> type,
 														  Class<?>[] parameterTypes, Object... args) {
 		// 5.1）获取当前线程上下文类加载器
