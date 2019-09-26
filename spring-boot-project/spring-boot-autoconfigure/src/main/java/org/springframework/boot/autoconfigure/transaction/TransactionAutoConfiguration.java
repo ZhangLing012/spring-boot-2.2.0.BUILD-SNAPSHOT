@@ -92,7 +92,7 @@ public class TransactionAutoConfiguration {
 		}
 
 		@Configuration
-		@EnableTransactionManagement(proxyTargetClass = true)
+		@EnableTransactionManagement(proxyTargetClass = true) //
 		@ConditionalOnProperty(prefix = "spring.aop", name = "proxy-target-class", havingValue = "true", matchIfMissing = true)
 		public static class CglibAutoProxyConfiguration {
 
