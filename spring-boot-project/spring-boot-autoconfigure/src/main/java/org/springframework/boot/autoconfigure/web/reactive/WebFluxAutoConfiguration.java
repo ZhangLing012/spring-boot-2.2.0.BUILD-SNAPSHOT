@@ -96,6 +96,7 @@ public class WebFluxAutoConfiguration {
 
 	@Configuration
 	@EnableConfigurationProperties({ ResourceProperties.class, WebFluxProperties.class })
+	//接口编程 在装配WebFluxConfig 之前要先 装配EnableWebFluxConfiguration
 	@Import({ EnableWebFluxConfiguration.class })
 	public static class WebFluxConfig implements WebFluxConfigurer {
 

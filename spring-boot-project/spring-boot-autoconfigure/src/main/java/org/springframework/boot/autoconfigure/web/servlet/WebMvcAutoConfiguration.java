@@ -136,10 +136,25 @@ import org.springframework.web.servlet.view.InternalResourceViewResolver;
  * @author Kristine Jetzke
  * @author Bruce Brouwer
  * @author Artsiom Yudovin
+ * 1、springboot默认可以访问以下路径文件(见ResourceProperties)：
+ *     classpath:/static
+ *     classpath:/public
+ *     classpath:/resources
+ *     classpath:/META-INF/resources
+ *    当使用了@EnableWebMvc时，默认的静态资源访问无效了因为默认情况下mvc使用的配置是WebMvcAutoConfiguration，加入该配置变成了WebMvcConfigurationSupport
+ * 2、@EnableWebMvc、WebMvcConfigurationSupport、WebMvcConfigurationAdapter
+ *     @EnableWebMvc=WebMvcConfigurationSupport，使用了@EnableWebMvc注解等于扩展了WebMvcConfigurationSupport但是没有重写任何方法
+ *     @EnableWebMvc+extends WebMvcConfigurationAdapter，在扩展的类中重写父类的方法即可，这种方式会屏蔽springboot的WebMvcAutoConfiguration中的设置
+ *     @EnableWebMvc+extends WebMvcConfigurationSupport 只会使用@EnableWebMvc
+ *     extends WebMvcConfigurationSupport，在扩展的类中重写父类的方法即可，这种方式会屏蔽springboot的@WebMvcAutoConfiguration中的设置
+ *     extends WebMvcConfigurationAdapter，在扩展的类中重写父类的方法即可，这种方式依旧使用springboot的WebMvcAutoConfiguration中的设置
+ *     在springboot2.x中，WebMvcConfigurationAdapter已经过时，通过实现接口WebMvcConfigurer可以替代原有规则
+ *
  */
 @Configuration
 @ConditionalOnWebApplication(type = Type.SERVLET)
 @ConditionalOnClass({ Servlet.class, DispatcherServlet.class, WebMvcConfigurer.class })
+// @EnableWebMvc 会实例化WebMvcConfigurationSupport
 @ConditionalOnMissingBean(WebMvcConfigurationSupport.class)
 @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE + 10)
 @AutoConfigureAfter({ DispatcherServletAutoConfiguration.class,

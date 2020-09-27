@@ -83,6 +83,7 @@ public class TransactionAutoConfiguration {
 	@ConditionalOnBean(PlatformTransactionManager.class)
 	@ConditionalOnMissingBean(AbstractTransactionManagementConfiguration.class)
 	public static class EnableTransactionManagementConfiguration {
+       // 开启事务管理器的注解@EnableTransactionManagement
 
 		@Configuration
 		@EnableTransactionManagement(proxyTargetClass = false)
